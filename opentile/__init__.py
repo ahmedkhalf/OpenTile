@@ -55,7 +55,8 @@ class Tiler:
         self.screen.force_update()
         self.initialized = True
         for workspace in self.workspaces.values():
-            workspace.tile()
+            if len(workspace.windows):
+                workspace.tile()
         logging.info("Successfully Initialized")
 
         logging.info("Starting Main Loop")
