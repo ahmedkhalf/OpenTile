@@ -37,21 +37,14 @@ def stack_layout(tw, windows_list):
 
     # Resize Stack Windows
     for i, window in enumerate(stack):
+        stack_len = len(stack)
+        y_cons = tw.height - tw.outer_gap * 2 - tw.inner_gap * (stack_len - 1)
         resize_window(
             window,
             tw.width // 2 + tw.inner_gap // 2,
-            tw.outer_gap
-            + (
-                (tw.height - tw.outer_gap * 2 - tw.inner_gap * (len(stack) - 1))
-                // len(stack)
-            )
-            * i
-            + tw.inner_gap * i,
+            tw.outer_gap + (y_cons // stack_len) * i + tw.inner_gap * i,
             tw.width // 2 - tw.inner_gap // 2 - tw.outer_gap,
-            (
-                (tw.height - tw.outer_gap * 2 - tw.inner_gap * (len(stack) - 1))
-                // len(stack)
-            ),
+            (y_cons // stack_len),
         )
 
 
