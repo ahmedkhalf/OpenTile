@@ -1,24 +1,35 @@
 #!/usr/bin/python
 
+import logging
+
+logging.basicConfig(format="%(levelname)s :: %(message)s", level=logging.DEBUG)
+
 import gi
 
 gi.require_version("Wnck", "3.0")
 from gi.repository import Wnck, GLib
 
-import logging
-
-logging.basicConfig(format="%(levelname)s :: %(message)s", level=logging.DEBUG)
+import geometry
 
 
 class TiledWorkspace:
     def __init__(self, tiler, workspace):
+        self.tiler = tiler
         self.width = workspace.get_width()
         self.height = workspace.get_height()
         self.number = workspace.get_number()
-        self.windows = set()
+        self.layout = geometry.Layout.stack
+        self.windows = []
+
+        self.outer_gap = 32
+        self.inner_gap = 16
+        self.padding_top = 0
+        self.padding_right = 0
+        self.padding_bottom = 0
+        self.padding_left = 0
 
     def add_window(self, window):
-        self.windows.add(window)
+        self.windows.append(window)
         if tiler.initialized:
             self.tile()
 
@@ -29,19 +40,14 @@ class TiledWorkspace:
 
     def tile(self):
         logging.debug("Tiling workspace %s", self.number)
+        self.layout(self, self.windows)
 
 
 class Tiler:
-    GRAVITY = Wnck.WindowGravity(0)
-    RESIZE_MASK = Wnck.WindowMoveResizeMask(255)
-
     def __init__(self):
         self.screen = Wnck.Screen.get_default()
         self.workspaces = {}
         self.initialized = False
-
-        self.outer_gap = 32
-        self.inner_gap = 16
 
     def start(self):
         logging.info("Connecting to Signals")
@@ -55,8 +61,7 @@ class Tiler:
         self.screen.force_update()
         self.initialized = True
         for workspace in self.workspaces.values():
-            if len(workspace.windows):
-                workspace.tile()
+            workspace.tile()
         logging.info("Successfully Initialized")
 
         logging.info("Starting Main Loop")
@@ -81,6 +86,7 @@ class Tiler:
             number,
             window.get_pid(),
         )
+        window.connect("workspace-changed", self.on_workspace_changed)
         self.workspaces[number].add_window(window)
 
     def on_window_closed(self, _screen, window):
@@ -92,6 +98,16 @@ class Tiler:
             window.get_pid(),
         )
         self.workspaces[number].remove_window(window)
+
+    def on_workspace_changed(self, window):
+        new_workspace = window.get_workspace().get_number()
+        logging.debug(
+            "Workspace Changed id(%s) workspace(%s)", window.get_pid(), new_workspace
+        )
+        for workspace in self.workspaces.values():
+            if window in workspace.windows:
+                workspace.remove_window(window)
+        self.workspaces[new_workspace].add_window(window)
 
 
 if __name__ == "__main__":
