@@ -30,16 +30,16 @@ class TiledWorkspace:
 
     def add_window(self, window):
         self.windows.append(window)
-        if tiler.initialized:
+        if self.tiler.initialized:
             self.tile()
 
     def remove_window(self, window):
         self.windows.remove(window)
-        if tiler.initialized:
+        if self.tiler.initialized:
             self.tile()
 
     def tile(self):
-        logging.debug("Tiling workspace %s", self.number)
+        logging.debug("Tiling Workspace %s", self.number)
         self.layout(self, self.windows)
 
 
@@ -50,14 +50,12 @@ class Tiler:
         self.initialized = False
 
     def start(self):
-        logging.info("Connecting to Signals")
+        logging.info("Initializing")
         self.screen.connect("workspace-created", self.on_workspace_created)
         self.screen.connect("workspace-destroyed", self.on_workspace_destroyed)
         self.screen.connect("window-opened", self.on_window_opened)
         self.screen.connect("window_closed", self.on_window_closed)
-        logging.info("Signals Connected Successfully")
 
-        logging.info("Initializing")
         self.screen.force_update()
         self.initialized = True
         for workspace in self.workspaces.values():
