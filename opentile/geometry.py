@@ -22,28 +22,33 @@ def stack_layout(tw, windows_list):
     master = windows_list[0]
     stack = windows_list[1:]
 
+    x_off = tw.padding_right
+    y_off = tw.padding_top
+    tw_height = tw.height - tw.padding_top - tw.padding_bottom
+    tw_width = tw.width - tw.padding_right - tw.padding_left
+
     # Resize Master Window
     if len(stack):
-        width = tw.width // 2 - tw.inner_gap // 2 - tw.outer_gap - tw.padding_right
+        width = tw_width // 2 - tw.inner_gap // 2 - tw.outer_gap
     else:
-        width = tw.width - tw.outer_gap * 2 - tw.padding_right
+        width = tw_width - tw.outer_gap * 2
     resize_window(
         master,
-        tw.outer_gap + tw.padding_left,
-        tw.outer_gap + tw.padding_top,
+        tw.outer_gap + x_off,
+        tw.outer_gap + y_off,
         width,
-        tw.height - tw.outer_gap * 2 - tw.padding_bottom,
+        tw_height - tw.outer_gap * 2,
     )
 
     # Resize Stack Windows
     for i, window in enumerate(stack):
         stack_len = len(stack)
-        y_cons = tw.height - tw.outer_gap * 2 - tw.inner_gap * (stack_len - 1)
+        y_cons = tw_height - tw.outer_gap * 2 - tw.inner_gap * (stack_len - 1)
         resize_window(
             window,
-            tw.width // 2 + tw.inner_gap // 2,
-            tw.outer_gap + (y_cons // stack_len) * i + tw.inner_gap * i,
-            tw.width // 2 - tw.inner_gap // 2 - tw.outer_gap,
+            tw_width // 2 + tw.inner_gap // 2 + x_off,
+            tw.outer_gap + (y_cons // stack_len) * i + tw.inner_gap * i + y_off,
+            tw_width // 2 - tw.inner_gap // 2 - tw.outer_gap,
             (y_cons // stack_len),
         )
 
